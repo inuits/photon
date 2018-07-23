@@ -30,7 +30,7 @@ public class ReverseElasticsearchSearcher implements ElasticsearchReverseSearche
                 .setQuery(queryBuilder).setSize(limit).setTimeout(timeout);
 
         if (locationDistanceSort)
-            builder.addSort(SortBuilders.geoDistanceSort("centroid", new GeoPoint(location.getY(), location.getX()))
+            builder.addSort(SortBuilders.geoDistanceSort("indexed_shape", new GeoPoint(location.getY(), location.getX()))
                     .order(SortOrder.ASC));
 
         return builder.execute().actionGet();

@@ -112,7 +112,7 @@ public class ReverseQueryBuilder implements TagFilterQueryBuilder {
 
     @Override
     public QueryBuilder buildQuery() {
-        QueryBuilder fb = QueryBuilders.geoDistanceQuery("centroid").point(location.getY(), location.getX())
+        QueryBuilder fb = QueryBuilders.geoDistanceQuery("indexed_shape").point(location.getY(), location.getX())
                 .distance(radius, DistanceUnit.KILOMETERS);
 
         BoolQueryBuilder finalQuery;

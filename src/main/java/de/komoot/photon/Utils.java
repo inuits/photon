@@ -4,6 +4,7 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.SetMultimap;
 import com.vividsolutions.jts.geom.Envelope;
+import com.vividsolutions.jts.geom.Point;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
 
@@ -35,6 +36,21 @@ public class Utils {
                     .field("lon", doc.getCentroid().getX())
                     .endObject();
         }
+
+        builder.startArray("indexed_shape");
+        if (doc.getIndexedShape() != null) {
+            for (Point p : doc.getIndexedShape()) {
+                builder.startObject()
+                        .field("lat", p.getY())
+                        .field("lon", p.getX())
+                        .endObject();
+            }
+        }
+        builder.startObject()
+            .field("lat", doc.getCentroid().getY())
+            .field("lon", doc.getCentroid().getX())
+            .endObject();
+        builder.endArray();
 
         if (doc.getHouseNumber() != null) {
             builder.field("housenumber", doc.getHouseNumber());

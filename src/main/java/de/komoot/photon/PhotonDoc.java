@@ -6,6 +6,7 @@ import com.vividsolutions.jts.geom.Point;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -40,6 +41,7 @@ public class PhotonDoc {
     private Map<String, String> state;
     private String houseNumber;
     private Point centroid;
+    private ArrayList<Point> indexedShape;
 
     public PhotonDoc(long placeId, String osmType, long osmId, String tagKey, String tagValue, Map<String, String> name, String houseNumber, Map<String, String> extratags, Envelope bbox, long parentPlaceId, double importance, CountryCode countryCode, Point centroid, long linkedPlaceId, int rankSearch) {
         String place = extratags != null ? extratags.get("place") : null;
@@ -64,6 +66,7 @@ public class PhotonDoc {
         this.centroid = centroid;
         this.linkedPlaceId = linkedPlaceId;
         this.rankSearch = rankSearch;
+        this.indexedShape = new ArrayList<Point>();
     }
 
     public PhotonDoc(PhotonDoc other) {
@@ -95,6 +98,10 @@ public class PhotonDoc {
             return String.valueOf(placeId);
         else
             return String.valueOf(placeId) + "." + houseNumber;
+    }
+
+    public void addIndexedShapePoint(Point p) {
+        this.indexedShape.add(p);
     }
 
     /**

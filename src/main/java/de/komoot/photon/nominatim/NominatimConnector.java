@@ -2,10 +2,7 @@ package de.komoot.photon.nominatim;
 
 import com.google.common.collect.ImmutableList;
 import com.neovisionaries.i18n.CountryCode;
-import com.vividsolutions.jts.geom.Envelope;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.GeometryFactory;
-import com.vividsolutions.jts.geom.Point;
+import com.vividsolutions.jts.geom.*;
 import com.vividsolutions.jts.linearref.LengthIndexedLine;
 import de.komoot.photon.Importer;
 import de.komoot.photon.PhotonDoc;
@@ -353,6 +350,10 @@ public class NominatimConnector {
                 // finalize document by taking into account the higher level placex rows assigned to this row
                 completePlace(docs.getBaseDoc());
 
+                if (rs.getString("class").equals("highway")) {
+                    completeHighway(docs.getBaseDoc());
+                }
+
                 for (PhotonDoc doc : docs.getDocsWithHousenumber()) {
                     while (true) {
                         try {
@@ -413,6 +414,54 @@ public class NominatimConnector {
             break;
         }
         log.info(String.format("finished import of %s photon documents.", MessageFormat.format("{0}", counter.longValue())));
+    }
+
+    private void completeHighway(PhotonDoc baseDoc) {
+        final List<Map<String, Object>> rows = template.queryForList("SELECT " +
+                "(dp).path [1] as index, " +
+                "ST_Y((dp).geom) as lat, " +
+                "ST_X((dp).geom) as lon "  +
+                "FROM (SELECT " +
+                    "ST_DumpPoints(geometry) as dp " +
+                    "FROM placex " +
+                    "WHERE osm_id = " + baseDoc.getOsmId() + ") " +
+                "AS foo");
+
+
+        Map<String, Object> prev_row = rows.get(0);
+        GeometryFactory factory = new GeometryFactory();
+
+        int threshold = 20;
+
+        for (final Map<String, Object> row : rows) {
+            final double lat1 = (double) prev_row.get("lat");
+            final double lon1 = (double) prev_row.get("lon");
+
+            final double lat2 = (double) row.get("lat");
+            final double lon2 = (double) row.get("lon");
+
+            final double rlat1 = Math.toRadians(lat1);
+            final double rlon1 = Math.toRadians(lon1);
+
+            final double rlat2 = Math.toRadians(lat2);
+            final double rlon2 = Math.toRadians(lon2);
+
+            double distance = 6371.0 * 1000 * Math.acos(Math.sin(rlat1) * Math.sin(rlat2) + Math.cos(rlat1) * Math.cos(rlat2) * Math.cos(rlon1 - rlon2));
+            if (distance != 0 && !Double.isNaN(distance) && distance > threshold) {
+                int amount = (int) Math.floor(distance / threshold);
+                double step_lat = (lat1 - lat2) / amount;
+                double step_lon = (lon1 - lon2) / amount;
+
+                double curr_lan = lat2;
+                double curr_lon = lon2;
+                for (int k = 0; k < amount; k++) {
+                    curr_lan += step_lat;
+                    curr_lon += step_lon;
+                    baseDoc.addIndexedShapePoint(factory.createPoint(new Coordinate(curr_lon, curr_lan)));
+                }
+                prev_row = row;
+            }
+        }
     }
 
     /**
