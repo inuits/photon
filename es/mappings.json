@@ -174,7 +174,10 @@
 					}
 				}
 			},
-			"coordinate": {
+			"centroid": {
+				"type": "geo_point"
+			},
+			"indexed_shape": {
 				"type": "geo_point"
 			},
 			"country": {

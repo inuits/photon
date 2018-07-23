@@ -83,12 +83,12 @@ public class ConvertToJson implements OneWayConverter<SearchResponse, List<JSONO
     private JSONObject getPoint(Map<String, Object> source) {
         JSONObject point = new JSONObject();
 
-        final Map<String, Double> coordinate = (Map<String, Double>) source.get("coordinate");
-        if (coordinate != null) {
+        final Map<String, Double> centroid = (Map<String, Double>) source.get("centroid");
+        if (centroid != null) {
             point.put(Constants.TYPE, Constants.POINT);
-            point.put(Constants.COORDINATES, new JSONArray("[" + coordinate.get(Constants.LON) + "," + coordinate.get(Constants.LAT) + "]"));
+            point.put(Constants.COORDINATES, new JSONArray("[" + centroid.get(Constants.LON) + "," + centroid.get(Constants.LAT) + "]"));
         } else {
-            log.error(String.format("invalid data [id=%s, type=%s], coordinate is missing!", source.get(Constants.OSM_ID), source.get(Constants.OSM_VALUE)));
+            log.error(String.format("invalid data [id=%s, type=%s], centroid is missing!", source.get(Constants.OSM_ID), source.get(Constants.OSM_VALUE)));
         }
 
         return point;

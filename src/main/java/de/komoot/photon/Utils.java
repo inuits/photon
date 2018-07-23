@@ -30,7 +30,7 @@ public class Utils {
                 .field(Constants.IMPORTANCE, doc.getImportance());
 
         if (doc.getCentroid() != null) {
-            builder.startObject("coordinate")
+            builder.startObject("centroid")
                     .field("lat", doc.getCentroid().getY())
                     .field("lon", doc.getCentroid().getX())
                     .endObject();
